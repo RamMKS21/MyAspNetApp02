@@ -1,0 +1,35 @@
+name: Build and Deploy ASP.NET Core App to Azure
+
+on:
+  push:
+    branches:
+      - master   # matches your repo's default branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore MyAspNetApp02/MyAspNetApp02.csproj
+
+    - name: Build
+      run: dotnet build MyAspNetApp02/MyAspNetApp02.csproj --configuration Release --no-restore
+
+    - name: Publish
+      run: dotnet publish MyAspNetApp02/MyAspNetApp02.csproj -c Release -o ./publish
+
+    - name: Deploy to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'myaspnetapp-web02'   # must match your Azure Web App name exactly
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ./publish
